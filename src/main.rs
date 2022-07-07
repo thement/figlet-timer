@@ -1,11 +1,13 @@
-use figlet_rs::FIGfont;
 use clap::Parser;
-use std::time::{Instant, Duration};
+use figlet_rs::FIGfont;
+use std::time::{Duration, Instant};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
     minutes: u64,
+    #[clap(long, value_parser)]
+    font: Option<String>,
 }
 
 fn draw_message(message: &str, font: &FIGfont) {
@@ -20,7 +22,11 @@ fn main() {
     let cli = Cli::parse();
     //let font_data = std::include_str!("univers.flf");
     //let font = FIGfont::from_content(font_data).expect("BUG: cannot create font");
-    let font = FIGfont::standand().expect("BUG: missing standard font");
+    let font = if let Some(font_name) = cli.font.as_ref() {
+        FIGfont::from_file(font_name).expect("BUG: failed to open figlet font")
+    } else {
+        FIGfont::standand().expect("BUG: missing standard font")
+    };
     let timer_seconds = cli.minutes * 60;
     let timer_duration = Duration::from_secs(timer_seconds);
     let end_at = Instant::now()
